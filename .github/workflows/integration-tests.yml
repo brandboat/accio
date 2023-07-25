@@ -67,6 +67,12 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          issue-number: ${{ github.event.client_payload.pull_request.number }}
+          body: |
+            ci link: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       - name: build
         run: |
           ./mvnw clean install -B -DskipTests
