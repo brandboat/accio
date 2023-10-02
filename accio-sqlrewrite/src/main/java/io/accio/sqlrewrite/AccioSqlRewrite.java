@@ -183,62 +183,62 @@ public class AccioSqlRewrite
             return result;
         }
 
-        @Override
-        protected Node visitAliasedRelation(AliasedRelation node, Void context)
-        {
-            Relation result;
+//        @Override
+//        protected Node visitAliasedRelation(AliasedRelation node, Void context)
+//        {
+//            Relation result;
+//
+//            // rewrite the fields in QueryBody
+//            if (node.getLocation().isPresent()) {
+//                result = new AliasedRelation(
+//                        node.getLocation().get(),
+//                        visitAndCast(node.getRelation(), context),
+//                        node.getAlias(),
+//                        node.getColumnNames());
+//            }
+//            else {
+//                result = new AliasedRelation(
+//                        visitAndCast(node.getRelation(), context),
+//                        node.getAlias(),
+//                        node.getColumnNames());
+//            }
+//
+//            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
+//            if (relationshipCTENames.size() > 0) {
+//                result = applyRelationshipRule(result, relationshipCTENames);
+//            }
+//            return result;
+//        }
 
-            // rewrite the fields in QueryBody
-            if (node.getLocation().isPresent()) {
-                result = new AliasedRelation(
-                        node.getLocation().get(),
-                        visitAndCast(node.getRelation(), context),
-                        node.getAlias(),
-                        node.getColumnNames());
-            }
-            else {
-                result = new AliasedRelation(
-                        visitAndCast(node.getRelation(), context),
-                        node.getAlias(),
-                        node.getColumnNames());
-            }
+//        @Override
+//        protected Node visitFunctionRelation(FunctionRelation node, Void context)
+//        {
+//            if (analysis.getMetricRollups().containsKey(NodeRef.of(node))) {
+//                return new Table(QualifiedName.of(analysis.getMetricRollups().get(NodeRef.of(node)).getMetric().getName()));
+//            }
+//            // this should not happen, every MetricRollup node should be captured and syntax checked in StatementAnalyzer
+//            throw new IllegalArgumentException("MetricRollup node is not replaced");
+//        }
+//
+//        @Override
+//        protected Node visitDereferenceExpression(DereferenceExpression node, Void context)
+//        {
+//            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), rewriteEnumIfNeed(node));
+//            if (newNode != node) {
+//                return newNode;
+//            }
+//            return new DereferenceExpression(node.getLocation(), (Expression) process(node.getBase()), node.getField());
+//        }
 
-            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
-            if (relationshipCTENames.size() > 0) {
-                result = applyRelationshipRule(result, relationshipCTENames);
-            }
-            return result;
-        }
-
-        @Override
-        protected Node visitFunctionRelation(FunctionRelation node, Void context)
-        {
-            if (analysis.getMetricRollups().containsKey(NodeRef.of(node))) {
-                return new Table(QualifiedName.of(analysis.getMetricRollups().get(NodeRef.of(node)).getMetric().getName()));
-            }
-            // this should not happen, every MetricRollup node should be captured and syntax checked in StatementAnalyzer
-            throw new IllegalArgumentException("MetricRollup node is not replaced");
-        }
-
-        @Override
-        protected Node visitDereferenceExpression(DereferenceExpression node, Void context)
-        {
-            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), rewriteEnumIfNeed(node));
-            if (newNode != node) {
-                return newNode;
-            }
-            return new DereferenceExpression(node.getLocation(), (Expression) process(node.getBase()), node.getField());
-        }
-
-        @Override
-        protected Node visitSubscriptExpression(SubscriptExpression node, Void context)
-        {
-            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
-            if (newNode != node) {
-                return newNode;
-            }
-            return new SubscriptExpression(node.getLocation(), (Expression) process(node.getBase()), node.getIndex());
-        }
+//        @Override
+//        protected Node visitSubscriptExpression(SubscriptExpression node, Void context)
+//        {
+//            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
+//            if (newNode != node) {
+//                return newNode;
+//            }
+//            return new SubscriptExpression(node.getLocation(), (Expression) process(node.getBase()), node.getIndex());
+//        }
 
         private Expression rewriteEnumIfNeed(DereferenceExpression node)
         {
@@ -259,27 +259,27 @@ public class AccioSqlRewrite
                     .orElseThrow(() -> new IllegalArgumentException(format("Enum value '%s' not found in enum '%s'", qualifiedName.getParts().get(1), qualifiedName.getParts().get(0))));
         }
 
-        @Override
-        protected Node visitIdentifier(Identifier node, Void context)
-        {
-            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
-        }
+//        @Override
+//        protected Node visitIdentifier(Identifier node, Void context)
+//        {
+//            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
+//        }
 
-        @Override
-        protected Node visitFunctionCall(FunctionCall node, Void context)
-        {
-            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node),
-                    new FunctionCall(
-                            node.getLocation(),
-                            node.getName(),
-                            node.getWindow(),
-                            node.getFilter(),
-                            node.getOrderBy(),
-                            node.isDistinct(),
-                            node.getNullTreatment(),
-                            node.getProcessingMode(),
-                            visitNodes(node.getArguments(), context)));
-        }
+//        @Override
+//        protected Node visitFunctionCall(FunctionCall node, Void context)
+//        {
+//            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node),
+//                    new FunctionCall(
+//                            node.getLocation(),
+//                            node.getName(),
+//                            node.getWindow(),
+//                            node.getFilter(),
+//                            node.getOrderBy(),
+//                            node.isDistinct(),
+//                            node.getNullTreatment(),
+//                            node.getProcessingMode(),
+//                            visitNodes(node.getArguments(), context)));
+//        }
 
         // the model is added in with query, and the catalog and schema should be removed
         private Node applyModelRule(Table table)
