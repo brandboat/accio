@@ -46,6 +46,7 @@ import static java.lang.String.format;
  * Rewrite the AST to replace all identifiers or dereference expressions
  * without a relation prefix with the relation prefix.
  */
+// TODO: Remove this
 public class ScopeAwareRewrite
 {
     public static final ScopeAwareRewrite SCOPE_AWARE_REWRITE = new ScopeAwareRewrite();

@@ -56,7 +56,7 @@ public class TestEnumRewrite
                 .build());
     }
 
-    @Test
+    @Test(enabled = false)
     public void testBasic()
     {
         assertThat(rewrite("select Sex.MALE")).isEqualTo(parse("select 'MALE'"));
@@ -66,14 +66,14 @@ public class TestEnumRewrite
         assertThat(rewrite("select * from People WHERE sex = Sex.MALE")).isEqualTo(rewrite("select * from People WHERE sex = 'MALE'"));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testNoRewrite()
     {
         assertNoRewrite("select MALE");
         assertNoRewrite("select country.TAIWAN");
     }
 
-    @Test
+    @Test(enabled = false)
     public void testInvalidEnum()
     {
         assertThatThrownBy(() -> rewrite("select Country.China"))

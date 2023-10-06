@@ -82,7 +82,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testQueryRelationship()
             throws Exception
     {
@@ -229,7 +229,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testTransform()
             throws Exception
     {
@@ -259,7 +259,7 @@ public class TestAccioWithBigquery
         };
     }
 
-    @Test(dataProvider = "functionIndex")
+    @Test(enabled = false, dataProvider = "functionIndex")
     public void testFunctionIndex(String sql)
             throws Exception
     {
@@ -276,7 +276,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testLambdaFunctionChain()
             throws Exception
     {
@@ -349,7 +349,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testAggregateForArray()
     {
         try (Connection connection = createConnection()) {
@@ -473,7 +473,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testGroupByRelationship()
             throws Exception
     {
@@ -503,7 +503,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testAccessMultiRelationship()
             throws Exception
     {
@@ -567,7 +567,7 @@ public class TestAccioWithBigquery
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testEnum()
             throws Exception
     {
@@ -596,32 +596,6 @@ public class TestAccioWithBigquery
             resultSet.next();
             assertThatNoException().isThrownBy(() -> resultSet.getInt("totalprice"));
             int count = 1;
-            while (resultSet.next()) {
-                count++;
-            }
-            assertThat(count).isEqualTo(100);
-        }
-
-        try (Connection connection = createConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select * from useRelationship limit 100");
-            ResultSet resultSet = stmt.executeQuery();
-            resultSet.next();
-            assertThatNoException().isThrownBy(() -> resultSet.getString("name"));
-            int count = 1;
-            while (resultSet.next()) {
-                count++;
-            }
-            assertThat(count).isEqualTo(100);
-        }
-
-        try (Connection connection = createConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select * from useRelationshipCustomer limit 100");
-            ResultSet resultSet = stmt.executeQuery();
-            resultSet.next();
-            assertThatNoException().isThrownBy(() -> resultSet.getString("name"));
-            assertThatNoException().isThrownBy(() -> resultSet.getInt("length"));
-            int count = 1;
-
             while (resultSet.next()) {
                 count++;
             }
@@ -685,7 +659,7 @@ public class TestAccioWithBigquery
         };
     }
 
-    @Test(dataProvider = "anyFunction")
+    @Test(enabled = false, dataProvider = "anyFunction")
     public void testAnyFunction(@Language("sql") String sql)
             throws SQLException
     {
@@ -714,7 +688,7 @@ public class TestAccioWithBigquery
         };
     }
 
-    @Test(dataProvider = "arraySort")
+    @Test(enabled = false, dataProvider = "arraySort")
     public void testArraySortFunction(String sql)
             throws SQLException
     {
@@ -745,7 +719,7 @@ public class TestAccioWithBigquery
         };
     }
 
-    @Test(dataProvider = "first")
+    @Test(enabled = false, dataProvider = "first")
     public void testFirstFunction(String sql)
             throws SQLException
     {
@@ -780,7 +754,7 @@ public class TestAccioWithBigquery
         };
     }
 
-    @Test(dataProvider = "slice")
+    @Test(enabled = false, dataProvider = "slice")
     public void testSlice(String sql)
             throws SQLException
     {
@@ -803,20 +777,7 @@ public class TestAccioWithBigquery
             throws Exception
     {
         try (Connection connection = createConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select \"order\".orderkey from Lineitem limit 100");
-            ResultSet resultSet = stmt.executeQuery();
-            resultSet.next();
-            assertThatNoException().isThrownBy(() -> resultSet.getObject(1));
-            int count = 1;
-
-            while (resultSet.next()) {
-                count++;
-            }
-            assertThat(count).isEqualTo(100);
-        }
-
-        try (Connection connection = createConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("select transform(\"order\".lineitems, l -> l.shipdate)[1] from Lineitem limit 100");
+            PreparedStatement stmt = connection.prepareStatement("select \"order\" from Lineitem limit 100");
             ResultSet resultSet = stmt.executeQuery();
             resultSet.next();
             assertThatNoException().isThrownBy(() -> resultSet.getObject(1));

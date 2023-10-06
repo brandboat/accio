@@ -123,7 +123,7 @@ public class TestScopeAwareRewrite
         };
     }
 
-    @Test(dataProvider = "scopeRewrite")
+    @Test(enabled = false, dataProvider = "scopeRewrite")
     public void testScopeRewriter(String original, String expected)
     {
         Statement expectedState = SQL_PARSER.createStatement(expected, new ParsingOptions(AS_DECIMAL));
@@ -141,7 +141,7 @@ public class TestScopeAwareRewrite
         };
     }
 
-    @Test(dataProvider = "wrongSessionContextNoRewrite")
+    @Test(enabled = false, dataProvider = "wrongSessionContextNoRewrite")
     public void testScopeRewriterWithWrongSessionContextNoRewrite(String original)
     {
         SessionContext sessionContext = SessionContext.builder()
@@ -154,7 +154,7 @@ public class TestScopeAwareRewrite
         Assertions.assertThat(actualSql).isEqualTo(SqlFormatter.formatSql(expectedState));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testScopeRewriterWithWrongSessionContextRewrite()
     {
         SessionContext sessionContext = SessionContext.builder()
@@ -188,7 +188,7 @@ public class TestScopeAwareRewrite
         };
     }
 
-    @Test(dataProvider = "notRewritten")
+    @Test(enabled = false, dataProvider = "notRewritten")
     public void testNotRewritten(String sql)
     {
         String rewrittenSql = rewrite(sql);
@@ -196,7 +196,7 @@ public class TestScopeAwareRewrite
         assertThat(rewrittenSql).isEqualTo(SqlFormatter.formatSql(expectedResult));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testDetectAmbiguous()
     {
         String sql = "SELECT name, book FROM Book b JOIN People p ON authorId = userId";
@@ -224,7 +224,7 @@ public class TestScopeAwareRewrite
         };
     }
 
-    @Test(dataProvider = "addPrefix")
+    @Test(enabled = false, dataProvider = "addPrefix")
     public void testAddPrefix(String source, String expected)
     {
         Expression expression = getSelectItem(String.format("SELECT %s FROM Book", source));

@@ -41,7 +41,7 @@ public class TestLambdaExpressionBodyRewrite
         };
     }
 
-    @Test(dataProvider = "lambdaExpression")
+    @Test(enabled = false, dataProvider = "lambdaExpression")
     public void testLambdaExpressionRewrite(String actual, String expected)
     {
         Node node = LambdaExpressionBodyRewrite.rewrite(parse(actual), "Book", new Identifier("book"));

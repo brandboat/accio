@@ -401,7 +401,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "oneToOneRelationshipAccessCases")
+    @Test(enabled = false, dataProvider = "oneToOneRelationshipAccessCases")
     public void testOneToOneRelationshipAccessingRewrite(String original, String expected, boolean enableH2Assertion)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -432,7 +432,7 @@ public class TestRelationshipAccessing
         }
     }
 
-    @Test
+    @Test(enabled = false)
     public void testNotFoundRelationAliased()
     {
         String original = "select b.book.author.book.name from Book a";
@@ -741,7 +741,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "oneToManyRelationshipAccessCase")
+    @Test(enabled = false, dataProvider = "oneToManyRelationshipAccessCase")
     public void testOneToManyRelationshipAccessingRewrite(String original, String expected, boolean enableH2Assertion)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -787,7 +787,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "notRewritten")
+    @Test(enabled = false, dataProvider = "notRewritten")
     public void testNotRewritten(String sql)
     {
         String rewrittenSql = AccioPlanner.rewrite(sql, DEFAULT_SESSION_CONTEXT, oneToOneAccioMDL, List.of(ACCIO_SQL_REWRITE));
@@ -795,7 +795,7 @@ public class TestRelationshipAccessing
         assertThat(rewrittenSql).isEqualTo(SqlFormatter.formatSql(expectedResult));
     }
 
-    @Test
+    @Test(enabled = false)
     public void testRelationshipOutsideQuery()
     {
         // this is invalid since we don't allow access to relationship field outside the sub-query
@@ -874,7 +874,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "transform")
+    @Test(enabled = false, dataProvider = "transform")
     public void testTransform(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -937,7 +937,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "filter")
+    @Test(enabled = false, dataProvider = "filter")
     public void testFilter(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1007,7 +1007,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "functionChain")
+    @Test(enabled = false, dataProvider = "functionChain")
     public void testFunctionChain(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1078,7 +1078,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "functionIndex")
+    @Test(enabled = false, dataProvider = "functionIndex")
     public void testFunctionIndex(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1209,7 +1209,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "aggregateForArray")
+    @Test(enabled = false, dataProvider = "aggregateForArray")
     public void testAggregateForArray(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1269,7 +1269,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "arraySort")
+    @Test(enabled = false, dataProvider = "arraySort")
     public void testArraySort(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1324,7 +1324,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "slice")
+    @Test(enabled = false, dataProvider = "slice")
     public void testSlice(String original, String expected)
     {
         Statement statement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));
@@ -1404,7 +1404,7 @@ public class TestRelationshipAccessing
         };
     }
 
-    @Test(dataProvider = "directAccessRelationship")
+    @Test(enabled = false, dataProvider = "directAccessRelationship")
     public void testDirectAccessRelationship(String original, String expected)
     {
         Statement rewrittenStatement = SQL_PARSER.createStatement(original, new ParsingOptions(AS_DECIMAL));

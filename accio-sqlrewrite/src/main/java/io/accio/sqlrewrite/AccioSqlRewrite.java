@@ -27,7 +27,6 @@ import io.trino.sql.tree.AliasedRelation;
 import io.trino.sql.tree.ComparisonExpression;
 import io.trino.sql.tree.DereferenceExpression;
 import io.trino.sql.tree.Expression;
-import io.trino.sql.tree.FunctionCall;
 import io.trino.sql.tree.FunctionRelation;
 import io.trino.sql.tree.Identifier;
 import io.trino.sql.tree.JoinCriteria;
@@ -38,7 +37,6 @@ import io.trino.sql.tree.Query;
 import io.trino.sql.tree.Relation;
 import io.trino.sql.tree.Statement;
 import io.trino.sql.tree.StringLiteral;
-import io.trino.sql.tree.SubscriptExpression;
 import io.trino.sql.tree.Table;
 import io.trino.sql.tree.With;
 import io.trino.sql.tree.WithQuery;
@@ -175,10 +173,10 @@ public class AccioSqlRewrite
                 result = applyModelRule(node);
             }
 
-            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
-            if (relationshipCTENames.size() > 0) {
-                result = applyRelationshipRule((Table) result, relationshipCTENames);
-            }
+//            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
+//            if (relationshipCTENames.size() > 0) {
+//                result = applyRelationshipRule((Table) result, relationshipCTENames);
+//            }
 
             return result;
         }
@@ -203,10 +201,10 @@ public class AccioSqlRewrite
                         node.getColumnNames());
             }
 
-            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
-            if (relationshipCTENames.size() > 0) {
-                result = applyRelationshipRule(result, relationshipCTENames);
-            }
+//            Set<String> relationshipCTENames = analysis.getReplaceTableWithCTEs().getOrDefault(NodeRef.of(node), Set.of());
+//            if (relationshipCTENames.size() > 0) {
+//                result = applyRelationshipRule(result, relationshipCTENames);
+//            }
             return result;
         }
 
@@ -220,25 +218,25 @@ public class AccioSqlRewrite
             throw new IllegalArgumentException("MetricRollup node is not replaced");
         }
 
-        @Override
-        protected Node visitDereferenceExpression(DereferenceExpression node, Void context)
-        {
-            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), rewriteEnumIfNeed(node));
-            if (newNode != node) {
-                return newNode;
-            }
-            return new DereferenceExpression(node.getLocation(), (Expression) process(node.getBase()), node.getField());
-        }
-
-        @Override
-        protected Node visitSubscriptExpression(SubscriptExpression node, Void context)
-        {
-            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
-            if (newNode != node) {
-                return newNode;
-            }
-            return new SubscriptExpression(node.getLocation(), (Expression) process(node.getBase()), node.getIndex());
-        }
+//        @Override
+//        protected Node visitDereferenceExpression(DereferenceExpression node, Void context)
+//        {
+//            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), rewriteEnumIfNeed(node));
+//            if (newNode != node) {
+//                return newNode;
+//            }
+//            return new DereferenceExpression(node.getLocation(), (Expression) process(node.getBase()), node.getField());
+//        }
+//
+//        @Override
+//        protected Node visitSubscriptExpression(SubscriptExpression node, Void context)
+//        {
+//            Expression newNode = analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
+//            if (newNode != node) {
+//                return newNode;
+//            }
+//            return new SubscriptExpression(node.getLocation(), (Expression) process(node.getBase()), node.getIndex());
+//        }
 
         private Expression rewriteEnumIfNeed(DereferenceExpression node)
         {
@@ -259,27 +257,27 @@ public class AccioSqlRewrite
                     .orElseThrow(() -> new IllegalArgumentException(format("Enum value '%s' not found in enum '%s'", qualifiedName.getParts().get(1), qualifiedName.getParts().get(0))));
         }
 
-        @Override
-        protected Node visitIdentifier(Identifier node, Void context)
-        {
-            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
-        }
+//        @Override
+//        protected Node visitIdentifier(Identifier node, Void context)
+//        {
+//            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node), node);
+//        }
 
-        @Override
-        protected Node visitFunctionCall(FunctionCall node, Void context)
-        {
-            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node),
-                    new FunctionCall(
-                            node.getLocation(),
-                            node.getName(),
-                            node.getWindow(),
-                            node.getFilter(),
-                            node.getOrderBy(),
-                            node.isDistinct(),
-                            node.getNullTreatment(),
-                            node.getProcessingMode(),
-                            visitNodes(node.getArguments(), context)));
-        }
+//        @Override
+//        protected Node visitFunctionCall(FunctionCall node, Void context)
+//        {
+//            return analysis.getRelationshipFields().getOrDefault(NodeRef.of(node),
+//                    new FunctionCall(
+//                            node.getLocation(),
+//                            node.getName(),
+//                            node.getWindow(),
+//                            node.getFilter(),
+//                            node.getOrderBy(),
+//                            node.isDistinct(),
+//                            node.getNullTreatment(),
+//                            node.getProcessingMode(),
+//                            visitNodes(node.getArguments(), context)));
+//        }
 
         // the model is added in with query, and the catalog and schema should be removed
         private Node applyModelRule(Table table)

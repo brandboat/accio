@@ -44,6 +44,7 @@ import static java.util.Objects.requireNonNull;
  * <li>`first` Function is an alias of sorted to-many result accessing.
  * e.g. {@code SELECT first(books) FROM User} -> {@code SELECT array_sort(books)[1] FROM User}</li>
  */
+// TODO: remove this
 public class SyntacticSugarRewrite
         implements AccioRule
 {
