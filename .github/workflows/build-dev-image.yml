@@ -3,7 +3,7 @@ name: Build dev image
 on:
   push:
     branches:
-      - main
+      - chore/build-multi-arch-image
 
 jobs:
   push-image:
