@@ -39,7 +39,7 @@ jobs:
           ACCIO_VERSION=$(./mvnw --quiet help:evaluate -Dexpression=project.version -DforceStdout)
           LATEST_COMMIT=$(git log -1 --pretty=%h)
           cd ./docker
-          cp ./accio-server/target/accio-server-${ACCIO_VERSION}-executable.jar ./
+          cp ../accio-server/target/accio-server-${ACCIO_VERSION}-executable.jar ./
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --tag ghcr.io/canner/accio:main-${LATEST_COMMIT} \
