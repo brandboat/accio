@@ -24,10 +24,6 @@ jobs:
       - name: Build
         run: |
           ./mvnw clean install -B -DskipTests -P exec-jar
-      - name: Copy exec jar to docker dir
-        run: |
-          ACCIO_VERSION=$(./mvnw --quiet help:evaluate -Dexpression=project.version -DforceStdout)
-          cp ./accio-server/target/accio-server-${ACCIO_VERSION}-executable.jar ./docker
       - name: Login to ghcr
         uses: docker/login-action@v2
         with:
@@ -42,9 +38,11 @@ jobs:
         run: |
           ACCIO_VERSION=$(./mvnw --quiet help:evaluate -Dexpression=project.version -DforceStdout)
           LATEST_COMMIT=$(git log -1 --pretty=%h)
+          cd ./docker
+          cp ./accio-server/target/accio-server-${ACCIO_VERSION}-executable.jar ./
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --tag ghcr.io/canner/accio:main-${LATEST_COMMIT} \
             --tag ghcr.io/canner/accio:latest \
-            --push -f ./docker/Dockerfile \
+            --push -f ./Dockerfile \
             --build-arg "ACCIO_VERSION=${ACCIO_VERSION}" .
