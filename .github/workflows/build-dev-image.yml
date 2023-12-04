@@ -40,12 +40,11 @@ jobs:
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
         run: |
-          cd ./docker
           ACCIO_VERSION=$(./mvnw --quiet help:evaluate -Dexpression=project.version -DforceStdout)
           LATEST_COMMIT=$(git log -1 --pretty=%h)
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --tag ghcr.io/canner/accio:main-${LATEST_COMMIT} \
             --tag ghcr.io/canner/accio:latest \
-            --push -f ./Dockerfile \
+            --push -f ./docker/Dockerfile \
             --build-arg "ACCIO_VERSION=${ACCIO_VERSION}" .
