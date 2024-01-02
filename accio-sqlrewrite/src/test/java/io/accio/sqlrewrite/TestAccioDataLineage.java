@@ -17,6 +17,7 @@ package io.accio.sqlrewrite;
 import com.google.common.collect.ImmutableList;
 import io.accio.base.AccioMDL;
 import io.accio.base.dto.Manifest;
+import io.accio.base.dto.Metric;
 import io.accio.base.dto.Model;
 import io.accio.base.dto.Relationship;
 import io.trino.sql.tree.QualifiedName;
@@ -34,6 +35,7 @@ import static io.accio.base.dto.Column.caluclatedColumn;
 import static io.accio.base.dto.Column.column;
 import static io.accio.base.dto.JoinType.MANY_TO_ONE;
 import static io.accio.base.dto.JoinType.ONE_TO_MANY;
+import static io.accio.base.dto.Metric.metric;
 import static io.accio.base.dto.Model.model;
 import static io.accio.base.dto.Model.onBaseObject;
 import static io.accio.base.dto.Relationship.relationship;
@@ -240,6 +242,46 @@ public class TestAccioDataLineage
         expected.put("Orders", Set.of("custkey"));
         expected.put("Customer", Set.of("custkey", "name"));
         expected.put("OnCustomer", Set.of("mom_custkey", "mom_name"));
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void testAnalyzeMetricOnModel()
+    {
+        Model newCustomer = addColumnsToModel(
+                customer,
+                column("orders", "Orders", "OrdersCustomer", true));
+        Metric customerSpending = metric("CustomerSpending", "Customer",
+                List.of(column("name", VARCHAR, null, true)),
+                List.of(column("spending", BIGINT, null, true, "sum(orders.totalprice)")));
+        Manifest manifest = withDefaultCatalogSchema()
+                .setModels(List.of(orders, newCustomer))
+                .setMetrics(List.of(customerSpending))
+                .setRelationships(List.of(ordersCustomer))
+                .build();
+
+        AccioMDL mdl = AccioMDL.fromManifest(manifest);
+        AccioDataLineage dataLineage = AccioDataLineage.analyze(mdl);
+        LinkedHashMap<String, Set<String>> actual;
+        LinkedHashMap<String, Set<String>> expected;
+        actual = dataLineage.getRequiredFields(QualifiedName.of("CustomerSpending", "name"));
+        expected = new LinkedHashMap<>();
+        expected.put("Customer", Set.of("name"));
+        expected.put("CustomerSpending", Set.of());
+        assertThat(actual).isEqualTo(expected);
+
+        actual = dataLineage.getRequiredFields(QualifiedName.of("CustomerSpending", "spending"));
+        expected = new LinkedHashMap<>();
+        expected.put("Customer", Set.of("custkey"));
+        expected.put("Orders", Set.of("custkey", "totalprice"));
+        expected.put("CustomerSpending", Set.of());
+        assertThat(actual).isEqualTo(expected);
+
+        actual = dataLineage.getRequiredFields(List.of(QualifiedName.of("CustomerSpending", "name"), QualifiedName.of("CustomerSpending", "spending")));
+        expected = new LinkedHashMap<>();
+        expected.put("Customer", Set.of("custkey", "name"));
+        expected.put("Orders", Set.of("custkey", "totalprice"));
+        expected.put("CustomerSpending", Set.of());
         assertThat(actual).isEqualTo(expected);
     }
 }

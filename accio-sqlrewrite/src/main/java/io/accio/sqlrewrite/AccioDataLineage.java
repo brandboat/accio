@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.SetMultimap;
 import io.accio.base.AccioMDL;
 import io.accio.base.dto.Column;
+import io.accio.base.dto.Metric;
 import io.accio.base.dto.Model;
 import io.accio.base.dto.Relationship;
 import io.accio.sqlrewrite.analyzer.ExpressionRelationshipInfo;
@@ -113,6 +114,21 @@ public class AccioDataLineage
                 SetMultimap<String, String> sourceColumns = getSourceColumns(mdl, model, column);
                 sourceColumnsMap.put(
                         QualifiedName.of(model.getName(), column.getName()),
+                        // TODO: maybe we can make getSourceColumns return Set<QualifiedName>
+                        sourceColumns.asMap().entrySet().stream()
+                                .map(e ->
+                                        e.getValue().stream()
+                                                .map(name -> QualifiedName.of(e.getKey(), name))
+                                                .collect(toImmutableSet()))
+                                .flatMap(Set::stream)
+                                .collect(toImmutableSet()));
+            }
+        }
+        for (Metric metric : mdl.listMetrics()) {
+            for (Column column : metric.getColumns()) {
+                SetMultimap<String, String> sourceColumns = getSourceColumns(mdl, metric, column);
+                sourceColumnsMap.put(
+                        QualifiedName.of(metric.getName(), column.getName()),
                         // TODO: maybe we can make getSourceColumns return Set<QualifiedName>
                         sourceColumns.asMap().entrySet().stream()
                                 .map(e ->
@@ -233,6 +249,101 @@ public class AccioDataLineage
         Analyzer analyzer = new Analyzer(mdl, model, column);
         analyzer.process(expression);
         return analyzer.getSourceColumns();
+    }
+
+    private static SetMultimap<String, String> getSourceColumns(AccioMDL mdl, Metric metric, Column column)
+    {
+        Expression expression;
+        // TODO: current column expression allow not empty (i.e. its expression is the same as column name)
+        //  we should not directly use dto object, instead, we should convert them into another object. and fill the expression in every column.
+        if (column.getExpression().isEmpty()) {
+            expression = parseExpression(column.getName());
+        }
+        else {
+            expression = parseExpression(column.getExpression().get());
+        }
+        MetricAnalyzer analyzer = new MetricAnalyzer(mdl, metric, column);
+        analyzer.process(expression);
+        return analyzer.getSourceColumns();
+    }
+
+    private static class MetricAnalyzer
+            extends DefaultTraversalVisitor<Void>
+    {
+        private final AccioMDL mdl;
+        private final Metric metric;
+        private final SetMultimap<String, String> sourceColumns = HashMultimap.create();
+
+        private MetricAnalyzer(AccioMDL mdl, Metric metric, Column column)
+        {
+            this.mdl = requireNonNull(mdl);
+            this.metric = requireNonNull(metric);
+        }
+
+        @Override
+        protected Void visitDereferenceExpression(DereferenceExpression node, Void ignored)
+        {
+            QualifiedName qualifiedName = getQualifiedName(node);
+            if (qualifiedName == null) {
+                return null;
+            }
+            Optional<Model> parentModel = mdl.getModel(metric.getBaseObject());
+            if (parentModel.isPresent()) {
+                Optional<ExpressionRelationshipInfo> relationshipInfo = createRelationshipInfo(qualifiedName, parentModel.get(), mdl).stream()
+                        .filter(info -> info.getRelationships().size() > 0)
+                        .filter(info -> info.getRemainingParts().size() > 0)
+                        .findAny();
+                relationshipInfo.ifPresent(info -> {
+                    // collect join keys
+                    for (int i = 0; i < info.getRelationships().size(); i++) {
+                        Relationship relationship = info.getRelationships().get(i);
+                        String left = relationship.getModels().get(0);
+                        String right = relationship.getModels().get(1);
+                        Expression joinCondition = parseExpression(relationship.getCondition());
+                        String leftKey = getJoinKey(joinCondition, left).orElseThrow();
+                        String rightKey = getJoinKey(joinCondition, right).orElseThrow();
+                        sourceColumns.put(left, leftKey);
+                        sourceColumns.put(right, rightKey);
+                    }
+                    // collect last relationship output column
+                    Relationship relationship = info.getRelationships().get(info.getRelationships().size() - 1);
+                    String columnName = info.getRemainingParts().get(info.getRemainingParts().size() - 1);
+                    String modelName = relationship.getModels().get(1);
+                    sourceColumns.put(modelName, columnName);
+                });
+            }
+            return null;
+        }
+
+        @Override
+        protected Void visitIdentifier(Identifier node, Void ignored)
+        {
+            // TODO: exclude sql reserved words
+            // handle metric on model
+            Optional<Model> parentModel = mdl.getModel(metric.getBaseObject());
+            if (parentModel.isPresent()) {
+                parentModel.get().getColumns().stream()
+                        .filter(column -> node.getValue().equals(column.getName()))
+                        .findAny()
+                        .ifPresent(column -> sourceColumns.put(parentModel.get().getName(), column.getName()));
+                return null;
+            }
+            // handle metric on metric
+            Optional<Metric> parentMetric = mdl.getMetric(metric.getBaseObject());
+            if (parentMetric.isPresent()) {
+                parentMetric.get().getColumns().stream()
+                        .filter(column -> node.getValue().equals(column.getName()))
+                        .findAny()
+                        .ifPresent(column -> sourceColumns.put(parentMetric.get().getName(), column.getName()));
+                return null;
+            }
+            return null;
+        }
+
+        public SetMultimap<String, String> getSourceColumns()
+        {
+            return sourceColumns;
+        }
     }
 
     private static class Analyzer
